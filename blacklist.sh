@@ -18,7 +18,7 @@ else
 fi
 
 #extract all IP addresses that failed to log in remotely
-cat auth.log* | grep "authentication failure" | awk 'NF>1{print $NF}' | grep "rhost" | cut -d '=' -f2 | sort -u > tmp
+sudo cat /var/log/auth.log* | grep "authentication failure" | awk 'NF>1{print $NF}' | grep "rhost" | cut -d '=' -f2 | sort -u > tmp
 
 #evict the current SSH client IP
 if [[ "$client_ip" ]]
