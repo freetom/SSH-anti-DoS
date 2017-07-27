@@ -5,13 +5,18 @@
 sudo ipset -v >/dev/null 2>&1 || { echo "This script requires ipset but it's not installed. Aborting." >&2; exit 1; }
 
 if [ -f "tmp" -o -f "tmpp" ]
-	then echo "This script requires that there are no files names 'tmp' and 'tmpp' in the current folder"
+	then echo "This script requires that there are no files named 'tmp' and 'tmpp' in the current folder"
 	exit 1
+fi
+
+if [[ $EUID -ne 0 ]]; then
+   echo "This script must be run as root" 1>&2
+   exit 1
 fi
 
 #remote shell?
 client_ip=$(who am i|awk '{ print $5}' | tr -d '()')
-if [[ -z "$client_ip" ]]
+if [ -z "$client_ip" ]
 	then echo "Local session"
 else
 	echo "Remote session, ignoring IP address $client_ip"
@@ -28,7 +33,8 @@ fi
 
 
 #setup ip tables
-if [ $(sudo ipset list blacklist | grep -q 'not exist') ]
+sudo ipset list blacklist 2>&1 | grep -q 'not exist'
+if [ $? != 0 ]
 	then sudo ipset create blacklist hash:ip hashsize 4096
 fi
 
