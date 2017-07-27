@@ -34,7 +34,7 @@ fi
 
 #setup ip tables
 sudo ipset list blacklist 2>&1 | grep -q 'not exist'
-if [ $? != 0 ]
+if [ $? != 1 ]
 	then sudo ipset create blacklist hash:ip hashsize 4096
 fi
 
@@ -43,7 +43,15 @@ sudo iptables -I FORWARD -m set --match-set blacklist src -j DROP
 ##
 
 #black list them all
-cat tmp | while read x; do ip=$(echo $x | cut -d ' ' -f1); if [[ $ip =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]; then ipset add blacklist $ip; fi; done;
+cat tmp | while read x
+	do ip=$(echo $x | cut -d ' ' -f1)
+	if [[ $ip =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ ]]
+		then sudo ipset test blacklist $ip &> /dev/null
+		if [ $? == 1 ]
+			then ipset add blacklist $ip;
+		fi
+	fi
+done
 rm tmp
 echo ""
 echo "A total of $(sudo ipset list blacklist | wc -l) IP addresses are now in blacklist"
