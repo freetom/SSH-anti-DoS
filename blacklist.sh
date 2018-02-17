@@ -16,11 +16,11 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 #remote shell?
-client_ip=$(who am i|awk '{ print $5}' | tr -d '()')
+client_ip=$(w|grep -oE '((1?[0-9][0-9]?|2[0-4][0-9]|25[0-5])\.){3}(1?[0-9][0-9]?|2[0-4][0-9]|25[0-5])' )
 if [ -z "$client_ip" ]
 	then echo "Local session"
 else
-	echo "Remote session, ignoring IP address $client_ip"
+	echo "Remote session, ignoring IP address $(echo $client_ip | tr $'\n' ' ')"
 fi
 
 #extract all IP addresses that failed to log in remotely
@@ -55,6 +55,6 @@ cat tmp | while read x
 done
 rm tmp
 echo ""
-echo "A total of $(sudo ipset list blacklist | wc -l) IP addresses are now in blacklist"
+echo "A total of $(sudo ipset list blacklist | tail -n +8 | wc -l) IP addresses are now in blacklist"
 echo "To get the full list, type 'sudo ipset list blacklist'"
 echo ""
